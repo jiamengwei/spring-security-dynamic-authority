@@ -1,0 +1,2 @@
+# SpringSecurityExample
+一个Spring Security动态Url权限的示例
