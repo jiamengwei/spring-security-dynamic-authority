@@ -68,7 +68,8 @@ public class WebSecurityConfig {
 				.and().authorizeRequests().anyRequest().authenticated()
 				.filterSecurityInterceptorOncePerRequest(false)
 				.and()
-				.formLogin(Customizer.withDefaults());
+				.formLogin(Customizer.withDefaults())
+				.logout().deleteCookies("sessionId");
 
 			/**
 			 * 添加自定义的过滤器，过滤器的位置在FilterSecurityInterceptor的前面

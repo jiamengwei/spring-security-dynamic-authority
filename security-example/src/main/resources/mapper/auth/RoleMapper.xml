@@ -23,4 +23,14 @@
         inner join resource_role rr on rr.role_id = r.id
         where rr.resource_id = #{resourceId}
     </select>
+
+    <select id="findRolesByUserId" resultMap="BaseResultMap">
+        select
+        r.id,
+        r.name,
+        r.description
+        from role r
+        inner join user_role ur on ur.role_id = r.id
+        where ur.user_id = #{userId}
+    </select>
 </mapper>

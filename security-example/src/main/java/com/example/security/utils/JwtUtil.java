@@ -29,7 +29,7 @@ public class JwtUtil {
 		Map<String, Object> map = new HashMap<>();
 		map.put("username", "张三");
 		map.put("role", Arrays.asList("admin", "developer"));
-		map.put("expireTime", LocalDateTime.of(2020,1,16,10,2,2).plusMinutes(10).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+		map.put("expireTime", LocalDateTime.now().plusMinutes(10).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
 		String jws = Jwts.builder()
 			.setClaims(claims)
@@ -38,6 +38,7 @@ public class JwtUtil {
 			.compact();
 		System.out.println("生成Token：" + jws);
 
+		System.out.println("=====解析token=====");
 		Claims claimsA = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(jws).getBody();
 		System.out.println(claimsA.get("username"));
 		List<String> roles = (List<String>) claimsA.get("role");

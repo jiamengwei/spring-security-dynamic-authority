@@ -29,4 +29,8 @@ public interface IUserService extends IService<User> {
      * @return
      */
     UserDetailsDTO findUserDetailsByUsername(String username);
+
+    User findUserByUsername(String username);
+
+
 }

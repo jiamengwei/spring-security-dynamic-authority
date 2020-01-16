@@ -4,6 +4,8 @@ import com.example.security.auth.entity.Role;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * <p>
  *  Mapper 接口
@@ -15,4 +17,6 @@ import org.apache.ibatis.annotations.Param;
 public interface RoleMapper extends BaseMapper<Role> {
 
 	Role findByResourceId(@Param("resourceId") Integer id);
+
+	List<Role> findRolesByUserId(@Param("userId") Integer userId);
 }

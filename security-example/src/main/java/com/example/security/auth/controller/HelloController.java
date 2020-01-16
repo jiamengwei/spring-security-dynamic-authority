@@ -1,10 +1,13 @@
 package com.example.security.auth.controller;
 
+import com.example.security.auth.entity.User;
 import com.example.security.config.security.UrlRedisSecurityMetadataSource;
 import com.example.security.entity.WebApiResponse;
 import com.example.security.enums.EnumRedisKeys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -83,5 +86,16 @@ public class HelloController {
 			.filter(c -> c.getName().equals("sessionId"))
 			.findFirst().isPresent() ? true : false;
 		return WebApiResponse.success(isLogin);
+	}
+
+	@GetMapping("addAuthorities")
+	public WebApiResponse<Boolean> addAuthorities(){
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) authentication;
+
+		UsernamePasswordAuthenticationToken newToken =
+			new UsernamePasswordAuthenticationToken(token.getPrincipal(), token.getCredentials(), token.getAuthorities());
+		SecurityContextHolder.getContext().setAuthentication(newToken);
+		return WebApiResponse.success(Boolean.TRUE);
 	}
 }

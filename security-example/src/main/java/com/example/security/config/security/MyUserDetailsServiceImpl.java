@@ -1,7 +1,9 @@
 package com.example.security.config.security;
 
 import com.example.security.auth.entity.Role;
+import com.example.security.auth.entity.User;
 import com.example.security.auth.entity.UserDetailsDTO;
+import com.example.security.auth.service.IRoleService;
 import com.example.security.auth.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,29 +25,27 @@ public class MyUserDetailsServiceImpl implements UserDetailsService {
 	@Autowired
 	private IUserService userService;
 
+	@Autowired
+	private IRoleService roleService;
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		UserDetailsDTO userDetailsDTO = userService.findUserDetailsByUsername(username);
-
-		if (userDetailsDTO == null) {
-			log.debug("Query returned no results for user '" + username + "'");
+		User user = userService.findUserByUsername(username);
+		if (user == null) {
 			throw new UsernameNotFoundException("username not found");
 		}
-
+		List<Role> roleList = roleService.findRolesByUserId(user.getId());
 		Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
-
-		List<Role> roleList = userDetailsDTO.getRoleList();
 		if (!CollectionUtils.isEmpty(roleList)) {
-			String[] roles = userDetailsDTO.getRoleList()
+			String[] roles = roleList
 				.stream()
 				.map(Role::getName)
 				.collect(Collectors.toList())
-				.toArray(new String[userDetailsDTO.getRoleList().size()]);
-
+				.toArray(new String[roleList.size()]);
 			authorities = AuthorityUtils.createAuthorityList(roles);
 		}
 
-		return new org.springframework.security.core.userdetails.User(userDetailsDTO.getUsername(), userDetailsDTO.getPassword(), userDetailsDTO.getEnabled(),
+		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), user.getEnabled(),
 			true, true, true, authorities);
 	}
 }
