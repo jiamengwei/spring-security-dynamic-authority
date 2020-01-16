@@ -7,9 +7,19 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author JiaMengwei
@@ -33,6 +43,17 @@ public class WebSecurityConfig {
 		@Autowired
 		private MySecurityInterceptor securityInterceptor;
 
+		@Bean
+		public MyAuthenticationProcessingFilter myAuthenticationProcessingFilter() throws Exception {
+			MyAuthenticationProcessingFilter filter = new MyAuthenticationProcessingFilter();
+			filter.setAuthenticationManager(authenticationManagerBean());
+			SimpleUrlAuthenticationSuccessHandler successHandler =
+				new SimpleUrlAuthenticationSuccessHandler("/");
+			filter.setAuthenticationSuccessHandler(successHandler);
+			filter.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/login"));
+			return filter;
+		}
+
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			/**
@@ -55,7 +76,9 @@ public class WebSecurityConfig {
 			 * 注意：如果filterSecurityInterceptorOncePerRequest的值为true，经过自定义过滤器的验证之后不管是否成功都会直接返回，
 			 * 不会执行FilterSecurityInterceptor过滤
 			 */
-			http.addFilterBefore(securityInterceptor, FilterSecurityInterceptor.class);
+			http
+				.addFilterBefore(securityInterceptor, FilterSecurityInterceptor.class)
+				.addFilterAt(myAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
 		}
 	}
 }

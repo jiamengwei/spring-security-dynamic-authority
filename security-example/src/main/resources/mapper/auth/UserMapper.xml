@@ -4,9 +4,9 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.example.security.auth.entity.User">
-        <id column="id" property="id" />
-        <result column="username" property="username" />
-        <result column="password" property="password" />
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
         <result column="enabled" property="enabled"/>
     </resultMap>
 
@@ -16,18 +16,18 @@
     </sql>
 
     <resultMap id="UserDetailsDTOResultMap" type="com.example.security.auth.entity.UserDetailsDTO">
-        <id column="id" property="id" />
-        <result column="username" property="username" />
-        <result column="password" property="password" />
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
         <result column="enabled" property="enabled"/>
         <collection property="roleList" resultMap="RoleResultMap"/>
     </resultMap>
 
     <!-- Role通用查询映射结果 -->
     <resultMap id="RoleResultMap" type="com.example.security.auth.entity.Role">
-        <id column="role_id" property="id" />
-        <result column="role_name" property="name" />
-        <result column="role_description" property="description" />
+        <id column="role_id" property="id"/>
+        <result column="role_name" property="name"/>
+        <result column="role_description" property="description"/>
     </resultMap>
 
     <select id="findUserDetailsByUsername" resultMap="UserDetailsDTOResultMap">
@@ -40,9 +40,10 @@
             r.name as role_name,
             r.description as role_description
             from user u
-            inner join  user_role ur on ur.user_id = u.id
-            inner join role r on r.id = ur.role_id
+            left join  user_role ur on ur.user_id = u.id
+            left join role r on r.id = ur.role_id
             where u.username = #{username}
+            group by u.username
     </select>
 
 </mapper>

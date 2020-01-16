@@ -1,51 +1,56 @@
-POST http://localhost:8080/account/register
+POST http://{{host}}/account/register
+Content-Type: application/x-www-form-urlencoded
+
+username=Jane&password=123456
+
+###
+
+GET http://{{host}}/logout
+Accept: application/json
+
+###
+
+POST http://{{host}}/login
 Content-Type: application/x-www-form-urlencoded
 
 username=Paul&password=123456
-
 ###
 
-GET http://localhost:8080/logout
+GET http://{{host}}/getUserDetails?sessionId=0F36345AE6B8245A3F8E830A7B4ED30E
 Accept: application/json
 
 ###
 
-POST http://localhost:8080/login
-Content-Type: application/x-www-form-urlencoded
-
-username=jia&password=123456
+GET http://{{host}}/getAuthentication
+Accept: application/json
 ###
 
-GET http://localhost:8080/getUserDetails?sessionId=0F36345AE6B8245A3F8E830A7B4ED30E
+GET http://{{host}}/refresh
+Accept: */*
+Cache-Control: no-cache
+
+###
+GET http://{{host}}/developer
+Accept: */*
+Cache-Control: no-cache
+###
+
+GET http://{{host}}/admin
+Accept: */*
+Cache-Control: no-cache
+###
+
+GET http://{{host}}/user
+Accept: */*
+Cache-Control: no-cache
+###
+
+GET http://{{host}}/getUrlDetails
 Accept: application/json
 
 ###
 
-GET http://localhost:8080/getAuthentication
-Accept: application/json
-###
-
-GET http://localhost:8080/refresh
-Accept: */*
-Cache-Control: no-cache
-
-###
-GET http://localhost:8080/developer
-Accept: */*
-Cache-Control: no-cache
-###
-
-GET http://localhost:8080/admin
-Accept: */*
-Cache-Control: no-cache
-###
-
-GET http://localhost:8080/user
-Accept: */*
-Cache-Control: no-cache
-###
-
-GET http://localhost:8080/getUrlDetails
+GET http://{{host}}/isLogin
 Accept: application/json
 
 ###

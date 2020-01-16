@@ -1,6 +1,7 @@
 package com.example.security.auth.controller;
 
 import com.example.security.config.security.UrlRedisSecurityMetadataSource;
+import com.example.security.entity.WebApiResponse;
 import com.example.security.enums.EnumRedisKeys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
@@ -10,8 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author JiaMengwei
@@ -59,6 +63,7 @@ public class HelloController {
 		List<String> stringList = hashOperations.multiGet(RESOURCE_KEY, hashOperations.keys(RESOURCE_KEY));
 		return stringList;
 	}
+
 	/**
 	 * 获取当前用户拥有的角色信息
 	 *
@@ -69,5 +74,14 @@ public class HelloController {
 		return SecurityContextHolder.getContext().getAuthentication().getAuthorities()
 			.stream()
 			.map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+	}
+
+	@GetMapping("isLogin")
+	public WebApiResponse<Boolean> isLogin(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		boolean isLogin = Stream.of(cookies)
+			.filter(c -> c.getName().equals("sessionId"))
+			.findFirst().isPresent() ? true : false;
+		return WebApiResponse.success(isLogin);
 	}
 }
