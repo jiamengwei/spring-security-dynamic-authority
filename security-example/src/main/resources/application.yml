@@ -5,7 +5,7 @@ spring:
     password: root
     driver-class-name: com.mysql.jdbc.Driver
   redis:
-    host: localhost
+    host: 39.105.135.88
     password: jiamengwei
 logging:
   level:

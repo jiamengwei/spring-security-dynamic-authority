@@ -13,7 +13,7 @@ Accept: application/json
 POST http://localhost:8080/login
 Content-Type: application/x-www-form-urlencoded
 
-username=jia&password=123456
+username=jane&password=123456
 ###
 
 GET http://localhost:8080/getUserDetails?sessionId=0F36345AE6B8245A3F8E830A7B4ED30E
