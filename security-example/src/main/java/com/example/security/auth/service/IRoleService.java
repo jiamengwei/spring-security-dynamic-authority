@@ -2,11 +2,8 @@ package com.example.security.auth.service;
 
 import com.example.security.auth.entity.Role;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 
-import java.util.List;
 
 /**
  * <p>

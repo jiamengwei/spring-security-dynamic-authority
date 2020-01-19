@@ -37,5 +37,4 @@ public interface IUserService extends IService<User> {
      * @return
      */
     User findUserByUsername(String username);
-
 }
