@@ -55,6 +55,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userDetailsDTO;
     }
 
+    /**
+     * 根据username获取用户对象
+     *
+     * @param username
+     * @return
+     */
     @Override
     public User findUserByUsername(String username){
         QueryWrapper<User> wrapper = new QueryWrapper<>();

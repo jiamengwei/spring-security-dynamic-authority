@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -15,6 +17,11 @@ import java.util.List;
  * @since 2020-01-07
  */
 public interface IRoleService extends IService<Role> {
-	List<Role> findRolesByUserId(Integer userId);
 
+	/**
+	 * 根据用户id获取对应的角色信息
+	 * @param userId
+	 * @return
+	 */
+	List<Role> findRolesByUserId(Integer userId);
 }

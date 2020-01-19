@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author JiaMengwei
@@ -23,6 +23,12 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements IR
 	@Autowired
 	private RoleMapper roleMapper;
 
+	/**
+	 * 根据用户id获取对应的角色信息
+	 *
+	 * @param userId
+	 * @return
+	 */
 	@Override
 	public List<Role> findRolesByUserId(Integer userId) {
 		return roleMapper.findRolesByUserId(userId);
