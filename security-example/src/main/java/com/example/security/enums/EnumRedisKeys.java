@@ -3,7 +3,8 @@ package com.example.security.enums;
 public enum EnumRedisKeys {
 
 	RESOURCE("resource_key"),
-	SESSION("session_key");
+	USER("user_key"),
+	TOKEN("token_key");
 
 	private String key;
 

@@ -18,13 +18,20 @@ public class RedisUtils {
 		RedisUtils.hashOperations = redisTemplate.opsForHash();
 	}
 
-
-	public static boolean checkSessionId(String hashKey) {
-		return hashOperations.hasKey(EnumRedisKeys.SESSION.getValue(), hashKey);
+	public static boolean checkToken(String hashKey) {
+		return hashOperations.hasKey(EnumRedisKeys.TOKEN.getValue(), hashKey);
 	}
 
-	public static String getAuthorities(String sessionId) {
-		return (String) hashOperations.get(EnumRedisKeys.SESSION.getValue(), sessionId);
+	public static String getToken(String sessionId) {
+		return (String) hashOperations.get(EnumRedisKeys.TOKEN.getValue(), sessionId);
+	}
+
+	public static Long deleteToken(String sessionId) {
+		return  hashOperations.delete(EnumRedisKeys.TOKEN.getValue(), sessionId);
+	}
+
+	public static Long deleteUser(String username) {
+		return  hashOperations.delete(EnumRedisKeys.USER.getValue(), username);
 	}
 
 	public static String getValue(String key, String hashKey) {

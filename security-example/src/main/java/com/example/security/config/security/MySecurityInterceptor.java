@@ -1,11 +1,10 @@
 package com.example.security.config.security;
 
-import com.example.security.entity.WebApiResponse;
 import com.example.security.utils.RedisUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.http.HttpRequest;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.SecurityMetadataSource;
 import org.springframework.security.access.intercept.AbstractSecurityInterceptor;
@@ -15,28 +14,24 @@ import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-@Component
 public class MySecurityInterceptor extends AbstractSecurityInterceptor implements Filter {
 
 	/**
@@ -52,6 +47,22 @@ public class MySecurityInterceptor extends AbstractSecurityInterceptor implement
 	 */
 	private boolean observeOncePerRequest = false;
 
+	/**
+	 * 过期时间，单位：分钟
+	 * 默认30分钟过期
+	 */
+	private long expireTime = 30L;
+
+	public long getExpireTime() {
+		return expireTime;
+	}
+
+	public void setExpireTime(long expireTime) {
+		this.expireTime = expireTime;
+	}
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	/**
 	 * 装配自定义的FilterInvocationSecurityMetadataSource，用于加载Url及其对应的权限信息
@@ -82,7 +93,8 @@ public class MySecurityInterceptor extends AbstractSecurityInterceptor implement
 
 	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-		checkCookie(servletRequest);
+
+		verifyCookie(servletRequest, servletResponse);
 		/**
 		 * FilterInvocation 封装了请求信息和响应信息以及过滤链对象
 		 */
@@ -124,38 +136,44 @@ public class MySecurityInterceptor extends AbstractSecurityInterceptor implement
 
 	private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
-
 	/**
-	 * 从cookie中获取sessionId，如果存在sessionId与redis中的session进行比对
-	 * 如果redis中存在，则表示该用户已在别的服务中登录过，重新设置该用户的Authentication
-	 * 如果不存在将当前用户设置为匿名
+	 * 从cookie中获取sessionId，如果存在sessionId，根据sessionId从Redis获取token
+	 * 如果token存在，则表示该用户已在别的服务中登录过，随后对token进行校验，如果token未过期，将token反序列化为Authentication，
+	 *
+	 * 否则将当前用户设置为匿名
 	 * 注意：redis中如果不存在用户的sessionId，用户可能已在异地登录，当前用户会被挤掉
 	 *
 	 * @param servletRequest
 	 */
-	private void checkCookie(ServletRequest servletRequest) {
+	private void verifyCookie(ServletRequest servletRequest, ServletResponse servletResponse) {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
+		HttpServletResponse response = (HttpServletResponse) servletResponse;
 		Cookie[] cookies = request.getCookies();
-		if (cookies == null || cookies.length < 1) {
+		if (cookies == null || cookies.length < 2) {
 			return;
 		}
 		/**
 		 * 获取sessionId
 		 */
-		Optional<Cookie> sessionIdCookie = Stream.of(cookies)
-			.filter(c -> c.getName().equals("sessionId"))
-			.findFirst();
+		Cookie sessionIdCookie = null;
+		Cookie lastTimeCookie = null;
 
-		Cookie cookie = null;
-		if (sessionIdCookie.isPresent()) {
-			cookie = sessionIdCookie.get();
-		} else {
+		for (Cookie cookie : cookies){
+			if (cookie.getName().equals("sessionId")){
+				sessionIdCookie = cookie;
+			}
+			if (cookie.getName().equals("lastTime")){
+				lastTimeCookie = cookie;
+			}
+		}
+
+		if (sessionIdCookie == null || lastTimeCookie == null){
 			return;
 		}
 		/**
 		 * 检查Redis中是否存在sessionId
 		 */
-		boolean exist = RedisUtils.checkSessionId(cookie.getValue());
+		boolean exist = RedisUtils.checkToken(sessionIdCookie.getValue());
 		/**
 		 * 如果不存在将当前用户设置为匿名用户
 		 */
@@ -165,27 +183,58 @@ public class MySecurityInterceptor extends AbstractSecurityInterceptor implement
 			SecurityContextHolder.getContext().setAuthentication(newAuthentication);
 			return;
 		}
+
+
 		/**
 		 * 如果不是匿名用户说明当前用户在本服务第一次登录，此时已存在Authentication信息，直接返回
 		 */
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (!trustResolver.isAnonymous(authentication)) {
+			deleteTokenIfExpire(lastTimeCookie, sessionIdCookie, authentication.getName());
 			return;
 		}
 		/**
 		 * 如果是匿名用户说明当前用户在别的服务登录，需要在本服务构造一个Authentication对象作为Token填充到SecurityContext中
 		 * 因此需要从redis中获取用户角色信息，构造一个UsernamePasswordAuthenticationToken
 		 */
-		String roles = RedisUtils.getAuthorities(cookie.getValue());
-		Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
-		if (!StringUtils.isEmpty(roles)) {
-			authorities = Stream.of(roles.split(","))
-				.map(role -> {
-					return new SimpleGrantedAuthority(role);
-				}).collect(Collectors.toList());
+		String jwsStr = RedisUtils.getToken(sessionIdCookie.getValue());
+		byte[] tokenBytes = Base64.getDecoder().decode(jwsStr);
+		String tokenStr = new String(tokenBytes);
+
+		UsernamePasswordAuthenticationToken token = null;
+		try {
+			token = objectMapper.readValue(tokenStr, UsernamePasswordAuthenticationToken.class);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
 		}
-		Authentication newAuthentication =
-			new UsernamePasswordAuthenticationToken("no_principal", "no_password", authorities);
-		SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+		boolean expire = deleteTokenIfExpire(lastTimeCookie, sessionIdCookie, token.getName());
+		if (!expire){
+			SecurityContextHolder.getContext().setAuthentication(token);
+			response.addCookie(new Cookie("lastTime", Instant.now().toString()));
+		}
+	}
+
+
+	/**
+	 * 如果token过期，将当前用户设置为匿名，并从Redis删除token
+	 *
+	 * @param lastTimeCookie
+	 * @param sessionIdCookie
+	 * @param username
+	 * @return  已过期返回true，反之false
+	 */
+	private boolean deleteTokenIfExpire(Cookie lastTimeCookie, Cookie sessionIdCookie, String username){
+		Instant lastInstant = Instant.parse(lastTimeCookie.getValue());
+		long minutes = Duration.between(lastInstant, Instant.now()).toMinutes();
+		if (minutes > expireTime){
+			Authentication newAuthentication = new AnonymousAuthenticationToken("key", "anonymous",
+				AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+			SecurityContextHolder.getContext().setAuthentication(newAuthentication);
+			RedisUtils.deleteToken(sessionIdCookie.getValue());
+			RedisUtils.deleteUser(username);
+			log.warn("用户：" + username + "的token已过期");
+			return true;
+		}
+		return false;
 	}
 }

@@ -1,6 +1,8 @@
 package com.example.security.config.security;
 
-import org.apache.commons.lang3.StringUtils;
+import com.example.security.enums.EnumRedisKeys;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -9,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
@@ -19,8 +20,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+import java.util.Base64;
 
 /**
  * @author JiaMengwei
@@ -29,15 +30,16 @@ public class MyAuthenticationProcessingFilter extends AbstractAuthenticationProc
 
 	public static final String SPRING_SECURITY_FORM_USERNAME_KEY = "username";
 	public static final String SPRING_SECURITY_FORM_PASSWORD_KEY = "password";
-	public static final String SESSION_KEY = "session_key";
-	public static final String USER_KEY = "user_key";
 
 	private String usernameParameter = SPRING_SECURITY_FORM_USERNAME_KEY;
 	private String passwordParameter = SPRING_SECURITY_FORM_PASSWORD_KEY;
 	private boolean postOnly = true;
 
 	@Autowired
-	private  HashOperations hashOperations;
+	private ObjectMapper objectMapper;
+
+	@Autowired
+	private HashOperations hashOperations;
 
 	@Autowired
 	private RedisTemplate redisTemplate;
@@ -77,24 +79,54 @@ public class MyAuthenticationProcessingFilter extends AbstractAuthenticationProc
 		 */
 		pushSessionId(username, sessionId);
 		/**
-		 * 保存sessionId与对应的权限到Redis
+		 * 保存token到redis
 		 */
-		putAuthorities(sessionId,authentication.getAuthorities());
+		pushToken(sessionId, authentication);
 		/**
-		 * 添加sessionId到cookie
+		 * 添加sessionId和请求时间到cookie
 		 */
-		response.addCookie(new Cookie("sessionId", sessionId));
+		addCookie(response, sessionId);
 		return authentication;
+	}
+
+	/**
+	 * 添加sessionId和lastTime(请求时间)到cookie，
+	 * sessionId用于校验当前用户是否登录
+	 * lastTime用于校验sessionId是否过期
+	 *
+	 * @param response
+	 * @param sessionId
+	 */
+	private void addCookie(HttpServletResponse response, String sessionId){
+		response.addCookie(new Cookie("sessionId", sessionId));
+		response.addCookie(new Cookie("lastTime", Instant.now().toString()));
+	}
+
+	/**
+	 * 序列化authentication对象并使用Base64进行编码，保存到redis
+	 *
+	 * @param sessionId 用户的sessionId
+	 * @param authentication token对象
+	 */
+	private void pushToken(String sessionId, Authentication authentication) {
+		String tokenStr = null;
+		try {
+			tokenStr = objectMapper.writer().writeValueAsString(authentication);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		tokenStr = Base64.getEncoder().encodeToString(tokenStr.getBytes());
+		hashOperations.put(EnumRedisKeys.TOKEN.getValue(), sessionId, tokenStr);
 	}
 
 	/**
 	 * 保存用户名与sessionId到Redis
 	 *
-	 * @param username 用户名
+	 * @param username  用户名
 	 * @param sessionId sessionId
 	 * @return
 	 */
-	public void pushSessionId(String username, String sessionId){
+	public void pushSessionId(String username, String sessionId) {
 		/**
 		 * 校验用户名是否已存在
 		 *
@@ -102,28 +134,16 @@ public class MyAuthenticationProcessingFilter extends AbstractAuthenticationProc
 		 * 删除sessionId
 		 * 删除username
 		 */
-		boolean exist = hashOperations.hasKey(USER_KEY, username);
-		if (exist){
-			String oldSessionId = (String) hashOperations.get(USER_KEY, username);
-			hashOperations.delete(SESSION_KEY, oldSessionId);
-			hashOperations.delete(USER_KEY, username);
+		boolean exist = hashOperations.hasKey(EnumRedisKeys.USER.getValue(), username);
+		if (exist) {
+			String oldSessionId = (String) hashOperations.get(EnumRedisKeys.USER.getValue(), username);
+			hashOperations.delete(EnumRedisKeys.TOKEN.getValue(), oldSessionId);
+			hashOperations.delete(EnumRedisKeys.USER.getValue(), username);
 		}
 		/**
-		 * 添加新的用户名与sessionId，并设置过期时间为30分钟
+		 * 添加新的用户名与sessionId
 		 */
-		hashOperations.put(USER_KEY, username, sessionId);
-		redisTemplate.expire(USER_KEY, 30, TimeUnit.MINUTES);
-	}
-
-	/**
-	 * 保存sessionId与对应的权限到Redis
-	 *
-	 * @param sessionId
-	 * @param list 权限列表
-	 */
-	public void putAuthorities(String sessionId, Collection<? extends GrantedAuthority> list) {
-		hashOperations.put(SESSION_KEY, sessionId , StringUtils.join(list, ","));
-		redisTemplate.expire(SESSION_KEY, 30, TimeUnit.MINUTES);
+		hashOperations.put(EnumRedisKeys.USER.getValue(), username, sessionId);
 	}
 
 	@Nullable
@@ -136,7 +156,6 @@ public class MyAuthenticationProcessingFilter extends AbstractAuthenticationProc
 	 * including additional values and a separator.
 	 *
 	 * @param request so that request attributes can be retrieved
-	 *
 	 * @return the username that will be presented in the <code>Authentication</code>
 	 * request token to the <code>AuthenticationManager</code>
 	 */
@@ -149,9 +168,9 @@ public class MyAuthenticationProcessingFilter extends AbstractAuthenticationProc
 	 * Provided so that subclasses may configure what is put into the authentication
 	 * request's details property.
 	 *
-	 * @param request that an authentication request is being created for
+	 * @param request     that an authentication request is being created for
 	 * @param authRequest the authentication request object that should have its details
-	 * set
+	 *                    set
 	 */
 	protected void setDetails(HttpServletRequest request,
 	                          UsernamePasswordAuthenticationToken authRequest) {
