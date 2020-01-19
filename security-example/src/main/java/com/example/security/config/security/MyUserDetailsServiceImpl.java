@@ -2,10 +2,6 @@ package com.example.security.config.security;
 
 import com.example.security.auth.entity.Role;
 import com.example.security.auth.entity.User;
-<<<<<<< HEAD
-=======
-import com.example.security.auth.entity.UserDetailsDTO;
->>>>>>> bugFix2
 import com.example.security.auth.service.IRoleService;
 import com.example.security.auth.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
