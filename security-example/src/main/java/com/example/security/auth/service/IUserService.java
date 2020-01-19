@@ -29,4 +29,13 @@ public interface IUserService extends IService<User> {
      * @return
      */
     UserDetailsDTO findUserDetailsByUsername(String username);
+
+
+    /**
+     * 根据username获取用户对象
+     *
+     * @param username
+     * @return
+     */
+    User findUserByUsername(String username);
 }

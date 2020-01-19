@@ -1,5 +1,6 @@
 package com.example.security.auth.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.security.auth.entity.User;
 import com.example.security.auth.entity.UserDetailsDTO;
 import com.example.security.auth.mapper.UserMapper;
@@ -52,5 +53,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public UserDetailsDTO findUserDetailsByUsername(String username) {
         UserDetailsDTO userDetailsDTO = userMapper.findUserDetailsByUsername(username);
         return userDetailsDTO;
+    }
+
+    /**
+     * 根据username获取用户对象
+     *
+     * @param username
+     * @return
+     */
+    @Override
+    public User findUserByUsername(String username){
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username", username);
+        return userMapper.selectOne(wrapper);
     }
 }
