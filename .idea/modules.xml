@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/security-example/security.iml" filepath="$PROJECT_DIR$/security-example/security.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dynamic-authority-autoconfigure/dynamic-authority-autoconfigure.iml" filepath="$PROJECT_DIR$/dynamic-authority-autoconfigure/dynamic-authority-autoconfigure.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/spring-security-dynamic-authory.iml" filepath="$PROJECT_DIR$/.idea/spring-security-dynamic-authory.iml" />
     </modules>
   </component>
 </project>

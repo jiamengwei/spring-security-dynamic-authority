@@ -6,16 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="security" />
+        <module name="dynamic-authority-autoconfigure" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="security" target="1.8" />
+      <module name="dynamic-authority-autoconfigure" target="1.7" />
     </bytecodeTargetLevel>
-  </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="security" options="-parameters" />
-    </option>
   </component>
 </project>
