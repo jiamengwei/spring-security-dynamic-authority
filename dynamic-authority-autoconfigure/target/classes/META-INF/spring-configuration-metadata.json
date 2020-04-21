@@ -1,0 +1,28 @@
+{
+  "groups": [
+    {
+      "name": "spring.security.dynamic",
+      "type": "org.dynamic.authority.autoconfigure.DynamicAuthorityProperties",
+      "sourceType": "org.dynamic.authority.autoconfigure.DynamicAuthorityProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "spring.security.dynamic.authority-key",
+      "type": "java.lang.String",
+      "sourceType": "org.dynamic.authority.autoconfigure.DynamicAuthorityProperties"
+    },
+    {
+      "name": "spring.security.dynamic.no-matcher-permit",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.dynamic.authority.autoconfigure.DynamicAuthorityProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "spring.security.dynamic.permits",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.dynamic.authority.autoconfigure.DynamicAuthorityProperties"
+    }
+  ],
+  "hints": []
+}

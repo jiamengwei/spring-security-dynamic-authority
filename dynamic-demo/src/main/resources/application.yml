@@ -1,0 +1,17 @@
+server:
+  port: 9090
+
+spring:
+  security:
+    dynamic:
+      no-matcher-permit: true
+      authority-key: sdfdfsdf
+      permits:
+        - /hello
+        - /error
+logging:
+  level:
+    org:
+      springframework:
+        web: debug
+        security: debug

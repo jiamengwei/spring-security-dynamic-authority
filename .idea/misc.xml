@@ -7,6 +7,10 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/dynamic-authority-autoconfigure/pom.xml" />
+        <option value="$PROJECT_DIR$/security-example/pom.xml" />
+        <option value="$PROJECT_DIR$/dynamic-demo/pom.xml" />
+        <option value="$PROJECT_DIR$/base-example/src/pom.xml" />
+        <option value="$PROJECT_DIR$/base-example/pom.xml" />
       </list>
     </option>
   </component>

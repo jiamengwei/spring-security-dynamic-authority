@@ -1,0 +1,11 @@
+server:
+  port: 9091
+  servlet:
+    session:
+      timeout: 5
+logging:
+  level:
+    org:
+      springframework:
+        web: debug
+        security: debug
