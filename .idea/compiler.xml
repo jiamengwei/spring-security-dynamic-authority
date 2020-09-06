@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="security" />
+        <module name="security-example" />
         <module name="base-example" />
         <module name="dynamic-authority-autoconfigure" />
         <module name="dynamic-demo" />
@@ -19,11 +20,13 @@
       <module name="dynamic-demo" target="8" />
       <module name="dynamic-demo (1)" target="8" />
       <module name="security" target="1.8" />
+      <module name="security-example" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="security" options="-parameters" />
+      <module name="security-example" options="-parameters" />
     </option>
   </component>
 </project>

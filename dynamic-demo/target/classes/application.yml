@@ -4,11 +4,13 @@ server:
 spring:
   security:
     dynamic:
-      no-matcher-permit: true
-      authority-key: sdfdfsdf
+      no-matcher-permit: false
+      authority-key: dynamic-demo
       permits:
         - /hello
         - /error
+  redis:
+    host: 192.168.199.129
 logging:
   level:
     org:

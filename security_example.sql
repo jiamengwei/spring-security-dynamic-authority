@@ -32,7 +32,7 @@ CREATE TABLE `resource`  (
 -- Records of resource
 -- ----------------------------
 INSERT INTO `resource` VALUES (1, '/admin', 0);
-INSERT INTO `resource` VALUES (2, '/user', 0);
+INSERT INTO `resource` VALUES (2, '/TUser', 0);
 INSERT INTO `resource` VALUES (3, '/developer', 0);
 
 -- ----------------------------
@@ -70,7 +70,7 @@ CREATE TABLE `role`  (
 -- Records of role
 -- ----------------------------
 INSERT INTO `role` VALUES (1, 'admin', '管理员');
-INSERT INTO `role` VALUES (2, 'user', '用户');
+INSERT INTO `role` VALUES (2, 'TUser', '用户');
 INSERT INTO `role` VALUES (3, 'developer', '开发者');
 
 -- ----------------------------
@@ -94,10 +94,10 @@ INSERT INTO `role_resource` VALUES (4, 2, 2);
 INSERT INTO `role_resource` VALUES (5, 3, 3);
 
 -- ----------------------------
--- Table structure for user
+-- Table structure for TUser
 -- ----------------------------
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user`  (
+DROP TABLE IF EXISTS `TUser`;
+CREATE TABLE `TUser`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `password` varchar(120) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
@@ -106,10 +106,10 @@ CREATE TABLE `user`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of user
+-- Records of TUser
 -- ----------------------------
-INSERT INTO `user` VALUES (1, 'jia', '$2a$10$/iV36H5lQ7uD2mn.DFoHyu3DbpPxt8TtChTv3ZRCU9Xeu2W0yVOZy', 1);
-INSERT INTO `user` VALUES (2, 'Paul', '$2a$10$qUBDR7fJo9y0rZAyuuK0VOVnF9Jx/vaF0qDOj9dcdf2JygQm0TBR2', 1);
+INSERT INTO `TUser` VALUES (1, 'jia', '$2a$10$/iV36H5lQ7uD2mn.DFoHyu3DbpPxt8TtChTv3ZRCU9Xeu2W0yVOZy', 1);
+INSERT INTO `TUser` VALUES (2, 'Paul', '$2a$10$qUBDR7fJo9y0rZAyuuK0VOVnF9Jx/vaF0qDOj9dcdf2JygQm0TBR2', 1);
 
 -- ----------------------------
 -- Table structure for user_role

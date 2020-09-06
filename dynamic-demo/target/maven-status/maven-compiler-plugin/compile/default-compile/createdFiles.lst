@@ -1,4 +1,0 @@
-org\dynamic\demo\controller\HelloController.class
-org\dynamic\demo\config\SecurityConfig.class
-org\dynamic\demo\config\RedisTemplateConfig.class
-org\dynamic\demo\DynamicDemoApplication.class

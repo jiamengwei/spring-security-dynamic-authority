@@ -42,7 +42,7 @@ Accept: */*
 Cache-Control: no-cache
 ###
 
-GET http://{{host}}/user
+GET http://{{host}}/TUser
 Accept: */*
 Cache-Control: no-cache
 ###

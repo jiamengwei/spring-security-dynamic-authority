@@ -39,7 +39,7 @@
             r.id as role_id,
             r.name as role_name,
             r.description as role_description
-            from user u
+            from TUser u
             left join  user_role ur on ur.user_id = u.id
             left join role r on r.id = ur.role_id
             where u.username = #{username}

@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/dynamic-authority-autoconfigure/dynamic-authority-autoconfigure.iml" filepath="$PROJECT_DIR$/dynamic-authority-autoconfigure/dynamic-authority-autoconfigure.iml" />
       <module fileurl="file://$PROJECT_DIR$/dynamic-demo/dynamic-demo.iml" filepath="$PROJECT_DIR$/dynamic-demo/dynamic-demo.iml" />
       <module fileurl="file://$PROJECT_DIR$/security-example/security.iml" filepath="$PROJECT_DIR$/security-example/security.iml" />
+      <module fileurl="file://$PROJECT_DIR$/security-example/security-example.iml" filepath="$PROJECT_DIR$/security-example/security-example.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/spring-security-dynamic-authority.iml" filepath="$PROJECT_DIR$/.idea/spring-security-dynamic-authority.iml" />
     </modules>
   </component>

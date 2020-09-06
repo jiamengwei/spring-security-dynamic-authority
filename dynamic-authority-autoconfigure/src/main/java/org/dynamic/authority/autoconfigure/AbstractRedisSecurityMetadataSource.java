@@ -56,18 +56,18 @@ public abstract class AbstractRedisSecurityMetadataSource implements Initializin
      * @return
      */
     public Collection<ConfigAttribute> getConfigAttributeFromRedis(Collection<? extends String> hashKeys) {
-        List<List<Integer>> resourceRoleList = redisTemplate.opsForHash().multiGet(dynamicAuthorityProperties.getAuthorityKey(), hashKeys);
-        List<Integer> roleIdList = new ArrayList<>();
-        resourceRoleList.stream().forEach(roles -> {
-            roleIdList.addAll(roles);
+        List<List<String>> requestAuthorityList = redisTemplate.opsForHash().multiGet(dynamicAuthorityProperties.getAuthorityKey(), hashKeys);
+        List<String> authorityList = new ArrayList<>();
+        requestAuthorityList.stream().forEach(roles -> {
+            authorityList.addAll(roles);
         });
-        return roleIdList.stream()
-            .map(role -> {
-                return new SecurityConfig(role.toString());
+        return authorityList.stream()
+            .map(authority -> {
+                return new SecurityConfig(authority);
             }).distinct().collect(Collectors.toList());
     }
 
-    public int reloadConfigAttributes(List<UserAuthority> list) {
+    public int reloadConfigAttributes(List<RequestAuthority> list) {
         Object[] hashKeys = redisTemplate.opsForHash().keys(dynamicAuthorityProperties.getAuthorityKey()).toArray();
         if (hashKeys != null && hashKeys.length > 0) {
             redisTemplate.opsForHash().delete(dynamicAuthorityProperties.getAuthorityKey(), hashKeys);
@@ -75,14 +75,14 @@ public abstract class AbstractRedisSecurityMetadataSource implements Initializin
         if (CollectionUtils.isEmpty(list)) {
             return 0;
         }
-        list.stream().forEach(userAuthority -> {
-            redisTemplate.opsForHash().put(dynamicAuthorityProperties.getAuthorityKey(), userAuthority.getUri(), userAuthority.getAuthorities());
+        list.stream().forEach(requestAuthority -> {
+            redisTemplate.opsForHash().put(dynamicAuthorityProperties.getAuthorityKey(), requestAuthority.getRequest(), requestAuthority.getAuthorities());
         });
         return list.size();
     }
 
     public int refresh() {
-        List<UserAuthority> userAuthorities = securityMetadataSourceSupport.getAllAuthority();
+        List<RequestAuthority> userAuthorities = securityMetadataSourceSupport.getAllAuthority();
         if (CollectionUtils.isEmpty(userAuthorities)) {
             userAuthorities = Collections.emptyList();
         }
