@@ -1,12 +1,11 @@
 package org.dynamic.demo.security;
 
+
 import org.dynamic.authority.autoconfigure.RequestAuthority;
 import org.dynamic.authority.autoconfigure.SecurityMetadataSourceSupport;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Arrays;import java.util.List;
 
 public class SecurityMetadataSourceSupportImpl implements SecurityMetadataSourceSupport {
 

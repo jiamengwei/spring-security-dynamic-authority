@@ -1,5 +1,11 @@
 package org.dynamic.authority.autoconfigure;
 
+import org.dynamic.authority.autoconfigure.DynamicAuthorityProperties;
+import org.dynamic.authority.autoconfigure.DynamicSecurityInterceptor;
+import org.dynamic.authority.autoconfigure.MetadataSource.DefaultSecurityMetadataSourceSupport;
+import org.dynamic.authority.autoconfigure.MetadataSource.JdbcFilterInvocationSecurityMetadataSource;
+import org.dynamic.authority.autoconfigure.OneVotePermit;
+import org.dynamic.authority.autoconfigure.SecurityMetadataSourceSupport;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,7 +21,7 @@ public class DynamicAuthorityAutoConfiguration {
 
     private final RedisTemplate redisTemplate;
     private final DynamicAuthorityProperties dynamicAuthorityProperties;
-
+    private FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource;
 
     public DynamicAuthorityAutoConfiguration(RedisTemplate redisTemplate, DynamicAuthorityProperties dynamicAuthorityProperties) {
         this.redisTemplate = redisTemplate;
@@ -23,17 +29,24 @@ public class DynamicAuthorityAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(AccessDecisionManager.class)
     public AccessDecisionManager accessDecisionManager() {
         return new OneVotePermit();
     }
 
-    @Bean
-    public FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource(SecurityMetadataSourceSupport securityMetadataSourceSupport) {
-        DynamicSecurityMetadataSource metadataSource = new DynamicSecurityMetadataSource(dynamicAuthorityProperties);
-        metadataSource.setRedisTemplate(redisTemplate);
-        metadataSource.setSecurityMetadataSourceSupport(securityMetadataSourceSupport);
-        return metadataSource;
-    }
+//    @Bean
+//    public FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource(SecurityMetadataSourceSupport securityMetadataSourceSupport) {
+//        DynamicSecurityMetadataSource metadataSource = new DynamicSecurityMetadataSource(dynamicAuthorityProperties);
+//        metadataSource.setRedisTemplate(redisTemplate);
+//        metadataSource.setSecurityMetadataSourceSupport(securityMetadataSourceSupport);
+//        return metadataSource;
+//    }
+
+//    @Bean
+//    public FilterInvocationSecurityMetadataSource filterInvocationSecurityMetadataSource(){
+//        JdbcFilterInvocationSecurityMetadataSource metadataSource = new JdbcFilterInvocationSecurityMetadataSource();
+//        return metadataSource;
+//    }
 
     @Bean
     @ConditionalOnMissingBean(SecurityMetadataSourceSupport.class)
@@ -43,8 +56,8 @@ public class DynamicAuthorityAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnBean(RedisTemplate.class)
-    public DynamicSecurityInterceptor dynamicSecurityInterceptor(SecurityMetadataSourceSupport securityMetadataSourceSupport) {
-        return new DynamicSecurityInterceptor(filterInvocationSecurityMetadataSource(securityMetadataSourceSupport), accessDecisionManager());
+    @ConditionalOnBean(FilterInvocationSecurityMetadataSource.class)
+    public DynamicSecurityInterceptor dynamicSecurityInterceptor() {
+        return new DynamicSecurityInterceptor(filterInvocationSecurityMetadataSource, accessDecisionManager());
     }
 }
